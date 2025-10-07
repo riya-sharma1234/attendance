@@ -1,5 +1,5 @@
 import React from 'react'
-import UserData from '../components/userData'
+import UserData from '../components/UserData'
 import Announcement from '../components/Announcement'
 // import TaskList from '../components/TaskList'
 import Document from '../components/Document'
