@@ -546,7 +546,7 @@ const Document = () => {
 
         {/* Documents List */}
         <h2 className="text-center text-gray-900 font-bold text-xl mb-2">Documents List</h2>
-        <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
+        <div className="space-y-3 max-h-64 overflow-y-auto pr-2 flex flex-col gap-3 scrollbar-hide">
           {documents?.length === 0 ? (
             <p className="text-center text-gray-500">No documents uploaded yet.</p>
           ) : (
