@@ -60,13 +60,7 @@ const EmployeeCard = ({ employee }) => {
       {/* <div className= {`flip-card w-[300px] h-[400px] ${flipped ? 'flip-card-flipped' : ''}`}
         onClick={user?.role === "admin" ? toggleFlip : undefined} // flip only if admin
       > */}
-         <div
-  className={`flip-card w-[300px] h-[400px] ${
-    user?.role === "admin" && flipped ? "flip-card-flipped" : ""
-  }`}
-  onClick={user?.role === "admin" ? toggleFlip : undefined} // only admins can click
->
-
+         <div className={`flip-card w-[300px] h-[400px] ${user?.role === "admin" ? "admin-hover" : ""}`}>
 
         <div className="flip-card-inner relative w-full h-full">
           {/* FRONT SIDE */}
