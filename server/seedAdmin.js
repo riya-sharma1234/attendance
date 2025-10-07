@@ -19,7 +19,7 @@ const seedAdmins = async () => {
         salary:35000
       },
       {
-        name: "Admin Two",
+        name: "Admin Two", 
         email: "admin2@example.com",
         password: hashedPassword,
         role: "admin",

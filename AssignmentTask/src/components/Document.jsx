@@ -553,7 +553,7 @@ const Document = () => {
             documents.map((doc) => (
               <div
                 key={doc._id}
-                className="flex justify-between items-center bg-gray-50 p-3 rounded border border-blue-600"
+                className="flex justify-between items-center bg-gray-50 p-3 rounded border border-blue-600 max-h-64 overflow-y-auto scrollbar-hide"
               >
                 <span className="text-gray-900 break-all">{doc.title || doc.fileUrl.split("/").pop()}</span>
 
