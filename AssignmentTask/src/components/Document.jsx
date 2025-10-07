@@ -479,7 +479,7 @@ const Document = () => {
   }, [error, successMessage, dispatch]);
  
   return (
-    <div className="bg-[#0d1321] h-[500] p-6 flex justify-center">
+    <div className="bg-[#0d1321]  p-6 flex justify-center">
       <div className="bg-white w-full max-w-3xl p-6 rounded-2xl shadow-lg">
         <h1 className="text-center text-gray-900 font-bold text-2xl mb-4">
           Upload & View Documents
