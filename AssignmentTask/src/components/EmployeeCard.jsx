@@ -57,9 +57,15 @@ const EmployeeCard = ({ employee }) => {
 
 
     <div className="flex justify-center items-center ">
-      <div className= {`flip-card w-[300px] h-[400px] ${flipped ? 'flip-card-flipped' : ''}`}
+      {/* <div className= {`flip-card w-[300px] h-[400px] ${flipped ? 'flip-card-flipped' : ''}`}
         onClick={user?.role === "admin" ? toggleFlip : undefined} // flip only if admin
-      >
+      > */}
+      <div
+  className={`flip-card w-[300px] h-[400px] ${
+    user?.role === "admin" && flipped ? "flip-card-flipped" : ""
+  }`}
+  onClick={user?.role === "admin" ? toggleFlip : undefined}
+>
         <div className="flip-card-inner relative w-full h-full">
           {/* FRONT SIDE */}
           <div className="flip-card-front absolute w-full h-full bg-white rounded-xl overflow-hidden shadow-xl border">
