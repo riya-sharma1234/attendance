@@ -24,12 +24,17 @@ export const login = async (req, res) => {
 
     // Send token as HTTP-only cookie
     res.cookie("token", token, {
-      httpOnly: true, // can't access via JS
+      // httpOnly: true, // can't access via JS
       // secure: process.env.NODE_ENV === "production", // only HTTPS in prod
       // sameSite: "strict",
-      secure: false,          // for localhost only
-      sameSite: "lax",
-      maxAge: 24 * 60 * 60 * 1000 // 1 day
+      // secure: false,          // for localhost only
+      // sameSite: "lax",
+      // maxAge: 24 * 60 * 60 * 1000 // 1 day
+
+      httpOnly: true,           // cannot be accessed via JS
+      secure: true,             // must be true on HTTPS
+      sameSite: "none",         // allow cross-site cookies
+      maxAge: 24 * 60 * 60 * 1000 // 
     });
 
     res.json({
@@ -58,8 +63,9 @@ export const logout = async (req, res) => {
     // })
     res.clearCookie("token", {
       httpOnly: true,
-      sameSite: "lax",
-      secure: false,
+      secure: true,
+      sameSite: "none",
+
     }).json({ success: true });
 
     return res.json({ success: true, message: "logged out" })
