@@ -7,9 +7,10 @@
   transform-style: preserve-3d;
 }
 
-.flip-card-flipped .flip-card-inner {
+.flip-card.admin-hover:hover .flip-card-inner {
   transform: rotateY(180deg);
 }
+
 
 
  .flip-card-front,
