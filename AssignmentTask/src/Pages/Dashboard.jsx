@@ -89,10 +89,19 @@ const Dashboard = () => {
   const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (!user) {
+      navigate("/login");
+    }
+  }, [user, navigate]);
+
+
   // Decide target user
   const targetId = employeeId || user?._id;
 
   useEffect(() => {
+      if (!user) return; // stop if no user
+      
     if (employeeId && user?.role !== "admin") {
       //  Normal employee should not open other dashboards
       navigate("/dashboard");
