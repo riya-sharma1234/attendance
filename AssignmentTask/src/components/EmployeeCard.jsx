@@ -64,8 +64,9 @@ const EmployeeCard = ({ employee }) => {
   className={`flip-card w-[300px] h-[400px] ${
     user?.role === "admin" && flipped ? "flip-card-flipped" : ""
   }`}
-  onClick={user?.role === "admin" ? toggleFlip : undefined} // only admin can flip
+  onClick={user?.role === "admin" ? toggleFlip : undefined} // only admins can click
 >
+
 
         <div className="flip-card-inner relative w-full h-full">
           {/* FRONT SIDE */}
