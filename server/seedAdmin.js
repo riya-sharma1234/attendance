@@ -10,13 +10,25 @@ const seedAdmins = async () => {
         name: "Admin One",
         email: "admin1@example.com",
         password: hashedPassword,
-        role: "admin"
+        role: "admin",
+        designation : "Executive",
+        department:"HR",
+        employeeCode: "ADM001",
+        joiningDate: new Date(),
+        appraisalDate:new Date(),
+        salary:35000
       },
       {
         name: "Admin Two",
         email: "admin2@example.com",
         password: hashedPassword,
-        role: "admin"
+        role: "admin",
+        designation : "Executive",
+        department:"HR",
+        employeeCode: "ADM001",
+        joiningDate: new Date(),
+        appraisalDate:new Date(),
+        salary:35000
       }
     ];
 

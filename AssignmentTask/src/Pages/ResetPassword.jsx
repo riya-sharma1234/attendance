@@ -1,18 +1,22 @@
 import React, { useState } from 'react'
 import octaadslogo from "../assets/octaadslogo.jpg"
 import { useFormik } from 'formik';
+import { useNavigate } from 'react-router-dom';
 import * as Yup from 'yup';
 import { FaEye } from "react-icons/fa";
 import { FaEyeSlash } from "react-icons/fa";
-
+import api from "../utils/axios.js"
+import { toast } from "react-toastify"
 
 const ResetPassword = () => {
 
-
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState('');
-
+  const [isEmailSent, setISEmailSent] = useState("")
+  const [otp, setOtp] = useState(0)
+  const [isOtpSubmited, setIsOtpSubmited] = useState(false)
    
     const inputRefs = React.useRef([])
 
@@ -37,33 +41,59 @@ const ResetPassword = () => {
             }
         })
     }
+   
 
-    const handleSubmit = (e) => {
+    const onSubmitEmail = async (e) => {
+        e.preventDefault();
+        try {
+            const {data} = await api.post("/user/reset-otp", {email})
+            if(data.success){ 
+                toast.success(data.message)
+                setISEmailSent(true)
+            }
+            else {
+                toast.error(data.message)
+            }
+        } catch (error) {
+             toast.error(error.message)
+        }
+    }
+
+    const onSubmitOTP = async (e) => {
+        e.preventDefault();
+        const otpArray = inputRefs.current.map(e => e.value)
+        setOtp(otpArray.join(""))
+        setIsOtpSubmited(true)
+    }
+    const onSubmitNewPassword = async (e) => {
         e.preventDefault();
         if (password !== confirmPassword) {
             setError('Passwords do not match');
             return;
         }
-
-        setError('');
-        console.log('New password:', password);
-        // Submit logic goes here
+     try {
+        const {data} = await api.post("/user/reset-password", {email, otp, newPassword})
+        data.success ? toast.success(data.message) : toast.error(data.message)
+        data.success && Navigate("/login")
+     }catch (error){
+        toast.error(error.message)
+     }
     };
 
-    const formik = useFormik({
-        initialValues: {
-            email: '',
-        },
-        validationSchema: Yup.object({
-            email: Yup.string()
-                .email('Invalid email address')
-                .required('Email is required'),
-        }),
-        onSubmit: (values) => {
-            console.log('Form submitted with:', values);
-            // handle form submission (e.g., API call)
-        },
-    });
+    // const formik = useFormik({
+    //     initialValues: {
+    //         email: '',
+    //     },
+    //     validationSchema: Yup.object({
+    //         email: Yup.string()
+    //             .email('Invalid email address')
+    //             .required('Email is required'),
+    //     }),
+    //     onSubmit: (values) => {
+    //         console.log('Form submitted with:', values);
+    //         // handle form submission (e.g., API call)
+    //     },
+    // });
 
     return (
         <div className='flex items-center justify-center min-h-screen bg-gray-900'>
@@ -81,13 +111,16 @@ const ResetPassword = () => {
                         <span className=" text-xl block  text-gray-600 tracking-widest px-4">Media</span>
                     </span>
                 </div>
-                {/* <form >
+
+                {/* email form */}
+
+                 {!isEmailSent && <form  onSubmit= {onSubmitEmail}>
                         <h1 className='text-blue-600 font-bold text-2xl font-semibold text-center mb-4'>Reset Password</h1>
                         <p className='text-left  text-blue-600'>Enter your registered email address.</p>
                          <input type="email" placeholder='Enter email' className='w-full mt-1 mb-4 px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-600 border-blue-500 outline-none'/>
                         <button className='w-full bg-sky-500 hover:bg-sky-600 text-white py-2 rounded font-semibold'>Submit</button>
-                        </form> */}
-                <form onSubmit={formik.handleSubmit} className="max-w-md mx-auto">
+                        </form>}
+                {/* <form onSubmit={formik.handleSubmit} className="max-w-md mx-auto">
                     <h1 className="text-blue-600 text-2xl font-bold text-center mb-4">Reset Password</h1>
                     <p className="text-left text-blue-600 mb-2">Enter your registered email address.</p>
 
@@ -112,11 +145,11 @@ const ResetPassword = () => {
                     >
                         Submit
                     </button>
-                </form>
+                </form> */}
 
 
                 {/* otp input form */}
-                <form >
+               {!isOtpSubmited && isEmailSent && <form  onSubmit={onSubmitOTP} >
                     <h1 className='text-blue-600 font-bold text-2xl font-semibold text-center mb-4'>Reset password OTP</h1>
                     <p className='text-left  text-blue-600 mb-2'>Enter the 6-digit code sent to your email id.</p>
                     <div className='flex justify-between mb-8' onPaste={handlePaste}>
@@ -125,10 +158,10 @@ const ResetPassword = () => {
                         ))}
                     </div>
                     <button className='w-full bg-sky-500 hover:bg-sky-600 text-white py-2 rounded font-semibold'>Submit</button>
-                </form>
+                </form> }
 
                 {/* Enter new password */}
-                <form onSubmit={handleSubmit}>
+                {isOtpSubmited && isEmailSent && <form onSubmit={onSubmitNewPassword}>
                     <h1 className='text-blue-600 font-bold text-2xl font-semibold text-center mb-4'>New Password</h1>
                     <p className='text-left  text-blue-600'>Enter the new password below.</p>
 
@@ -150,7 +183,7 @@ const ResetPassword = () => {
                  
 
                     <button className='w-full bg-sky-500 hover:bg-sky-600 text-white py-2 rounded font-semibold'>Submit</button>
-                </form>
+                </form> }
 
             </div>
         </div>

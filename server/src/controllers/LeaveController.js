@@ -1,89 +1,77 @@
+import mongoose from "mongoose";
 import Leave from "../models/leave.models.js";
 import User from "../models/user.models.js";
 
-// yearly limits by type
-const LEAVE_LIMITS = {
-  casual: 12,
-  planned: 10,
-  sick: 13,
-  wfh: Infinity // unlimited
+// Helper: calculate days between two dates (inclusive)
+const calculateDays = (fromDate, toDate) => {
+  const from = new Date(fromDate);
+  const to = new Date(toDate);
+  // Strip time portion to avoid timezone issues
+  from.setHours(0, 0, 0, 0);
+  to.setHours(0, 0, 0, 0);
+  return Math.ceil((to - from) / (1000 * 60 * 60 * 24)) + 1;
 };
 
+
+// Apply leave (pending initially)
 export const applyLeave = async (req, res) => {
   try {
     const { leaveType, fromDate, toDate, reason } = req.body;
-    const employee = req.user._id; // from auth middleware
+    const employeeId = req.user._id;
 
-    if (!LEAVE_LIMITS.hasOwnProperty(leaveType)) {
-      return res.status(400).json({
-        success: false,
-        message: `Invalid leave type: ${leaveType}`
-      });
+    const user = await User.findById(employeeId);
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    const leaveLimits = user.leaveLimits || {}; // dynamic limits
+    const limit = leaveLimits[leaveType];
+
+    if (limit === undefined) {
+      return res.status(400).json({ success: false, message: `Invalid leave type: ${leaveType}` });
     }
 
     const leaveYear = new Date(fromDate).getFullYear();
 
-    // 1. Find all approved + pending leaves of same type for that year
-    const leaves = await Leave.find({
-      employee,
+    // Calculate total approved leaves of this type in the year
+    const approvedLeaves = await Leave.find({
+      employee: employeeId,
       year: leaveYear,
-      status: { $in: ["approved", "pending"] },
-      leaveType
+      leaveType,
+      status: "approved"
     });
 
-    // 2. Count total days consumed
     let totalConsumed = 0;
-    leaves.forEach(l => {
+    approvedLeaves.forEach(l => {
       const from = new Date(l.fromDate);
       const to = new Date(l.toDate);
-      const days = Math.ceil((to - from) / (1000 * 60 * 60 * 24)) + 1; // inclusive
-      totalConsumed += days;
+      totalConsumed += Math.ceil((to - from) / (1000 * 60 * 60 * 24)) + 1;
     });
 
-    // 3. Days in current request
-    const reqFrom = new Date(fromDate);
-    const reqTo = new Date(toDate);
-    const reqDays = Math.ceil((reqTo - reqFrom) / (1000 * 60 * 60 * 24)) + 1;
+    const reqDays = Math.ceil((new Date(toDate) - new Date(fromDate)) / (1000 * 60 * 60 * 24)) + 1;
 
-    // 4. Check yearly limit (skip if unlimited / WFH)
-    const limit = LEAVE_LIMITS[leaveType];
-    if (limit !== Infinity && totalConsumed + reqDays > limit) {
+    if (limit !== "unlimited" && totalConsumed + reqDays > limit) {
       return res.status(400).json({
         success: false,
-        message: `Yearly limit for ${leaveType} leave is ${limit}. You already consumed ${totalConsumed} days.`,
+        message: `Yearly limit exceeded for ${leaveType}`,
         consumed: totalConsumed,
         balance: limit - totalConsumed
       });
     }
 
-    // 5. Save leave
     const leave = await Leave.create({
-      employee,
+      employee: employeeId,
       leaveType,
       fromDate,
       toDate,
-      reason
+      reason,
+      year: leaveYear,
+      status: "pending"
     });
 
-    // 6. Build response
-    let response = {
+    res.json({
       success: true,
-      message: "Leave applied successfully, waiting for admin approval",
+      message: "Leave request submitted and pending approval",
       leave
-    };
-
-    if (limit === Infinity) {
-      // WFH
-      response.consumed = totalConsumed + reqDays;
-      response.balance = "Unlimited";
-    } else {
-      const newConsumed = totalConsumed + reqDays;
-      const balance = limit - newConsumed;
-      response.consumed = newConsumed;
-      response.balance = balance;
-    }
-
-    res.json(response);
+    });
 
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -91,109 +79,160 @@ export const applyLeave = async (req, res) => {
 };
 
 
+// Update leave status (approve/reject)
+export const updateLeaveStatus = async (req, res) => {
+  try {
+    const { leaveId, status } = req.body;
+
+    if (!leaveId || !status) return res.status(400).json({ success: false, message: "leaveId and status are required" });
+
+    const leave = await Leave.findById(leaveId);
+    if (!leave) return res.status(404).json({ success: false, message: "Leave not found" });
+
+    const user = await User.findById(leave.employee);
+    if (!user) return res.status(404).json({ success: false, message: "Employee not found" });
+
+    if (!user.consumedLeaves) user.consumedLeaves = {};
+    if (!leave.leaveType) return res.status(400).json({ success: false, message: "Leave type is missing" });
+    if (!user.consumedLeaves[leave.leaveType]) user.consumedLeaves[leave.leaveType] = 0;
+
+    const from = new Date(leave.fromDate);
+    const to = new Date(leave.toDate);
+    const days = Math.ceil((to - from) / (1000 * 60 * 60 * 24)) + 1;
+
+    if (status === "approved" && leave.status !== "approved") {
+      user.consumedLeaves[leave.leaveType] += days;
+    } else if (status === "rejected" && leave.status === "approved") {
+      user.consumedLeaves[leave.leaveType] = Math.max(0, user.consumedLeaves[leave.leaveType] - days);
+    }
+
+    leave.status = status;
+
+    await leave.save();
+    await user.save();
+
+    // Compute remaining balance dynamically
+    const leaveLimits = user.leaveLimits || {};
+    const balance = {};
+    Object.keys(leaveLimits).forEach(type => {
+      if (leaveLimits[type] === "unlimited") {
+        balance[type] = "Unlimited";
+      } else {
+        balance[type] = leaveLimits[type] - (user.consumedLeaves[type] || 0);
+      }
+    });
+
+    res.json({
+      success: true,
+      message: `Leave ${status} successfully`,
+      leave,
+      consumedLeaves: user.consumedLeaves,
+      balance
+    });
+
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+
+
+export const getLeaveBalances = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    const consumedLeaves = user.consumedLeaves || {};
+    const leaveLimits = user.leaveLimits || { casual: 12, planned: 10, sick: 13, wfh: "unlimited" };
+
+    const balance = {};
+
+    Object.keys(leaveLimits).forEach(type => {
+      if (String(leaveLimits[type]).toLowerCase() === "unlimited") {
+        balance[type] = "Unlimited";
+      } else {
+        balance[type] = Math.max(0, Number(leaveLimits[type]) - (consumedLeaves[type] || 0));
+      }
+    });
+
+    res.json({ success: true, consumedLeaves, balance });
+
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+
+
 export const getMonthlyLeaveStatus = async (req, res) => {
   try {
-    const { month, year } = req.query; 
-    const employee = req.user._id;
+    if (!req.user) return res.status(401).json({ success: false, message: "Unauthorized" });
 
-    // Fetch all non-rejected leaves (pending + approved)
+    const employee = req.user._id;
+    const { month, year } = req.query;
+
+    if (!month || !year) {
+      return res.status(400).json({ success: false, message: "Month and year are required" });
+    }
+
+    const monthNum = Number(month);
+    const yearNum = Number(year);
+
+    if (isNaN(monthNum) || isNaN(yearNum)) {
+      return res.status(400).json({ success: false, message: "Invalid month or year" });
+    }
+
+    // Date range for the month
+    const startDate = new Date(yearNum, monthNum - 1, 1);
+    const endDate = new Date(yearNum, monthNum, 0, 23, 59, 59); // last day of month
+
+    // Fetch leaves overlapping this month
     const leaves = await Leave.find({
       employee,
-      month: Number(month),
-      year: Number(year),
-      status: { $in: ["pending", "approved"] }  // include pending
+      status: { $in: ["pending", "approved"] },
+      fromDate: { $lte: endDate },
+      toDate: { $gte: startDate }
     });
 
-    // Initialize status
-    const leaveTypes = ["casual", "planned", "sick", "unpaid"];
+    const leaveTypes = ["casual", "planned", "sick", "wfh"];
     const status = {};
 
-    leaveTypes.forEach(type => {
-      status[type] = {
-        consumed: 0
-      };
-    });
+    leaveTypes.forEach(type => status[type] = { consumed: 0 });
 
-    // Count days
     leaves.forEach(l => {
       if (status[l.leaveType]) {
-        const from = new Date(l.fromDate);
-        const to = new Date(l.toDate);
-        const days =
-          Math.ceil((to - from) / (1000 * 60 * 60 * 24)) + 1;
-
+        const from = l.fromDate < startDate ? startDate : l.fromDate;
+        const to = l.toDate > endDate ? endDate : l.toDate;
+        const days = Math.ceil((to - from) / (1000 * 60 * 60 * 24)) + 1;
         status[l.leaveType].consumed += days;
       }
     });
 
     res.json({
       success: true,
-      month: Number(month),
-      year: Number(year),
+      leaves,
+      month: monthNum,
+      year: yearNum,
       status
     });
 
   } catch (err) {
+    console.error("Error in getMonthlyLeaveStatus:", err);
     res.status(500).json({ success: false, message: err.message });
   }
 };
 
 
-export const updateLeaveStatus = async (req, res) => {
-  try {
-    const { leaveId, status } = req.body;
-
-    // find leave first (before updating)
-    const leave = await Leave.findById(leaveId);
-    if (!leave) {
-      return res.status(404).json({ success: false, message: "Leave not found" });
-    }
-
-    // calculate days for this leave
-    const from = new Date(leave.fromDate);
-    const to = new Date(leave.toDate);
-    const days = Math.ceil((to - from) / (1000 * 60 * 60 * 24)) + 1;
-
-    // update status
-    leave.status = status;
-    await leave.save();
-
-    // update consumed count in User model (example: user.consumedLeaves[leaveType])
-    const user = await User.findById(leave.employee);
-
-    if (status === "approved" || status === "pending") {
-      // add consumed
-      user.consumedLeaves[leave.leaveType] =
-        (user.consumedLeaves[leave.leaveType] || 0) + days;
-    } else if (status === "rejected") {
-      // subtract consumed if previously counted
-      user.consumedLeaves[leave.leaveType] =
-        Math.max(0, (user.consumedLeaves[leave.leaveType] || 0) - days);
-    }
-
-    await user.save();
-
-    res.json({
-      success: true,
-      message: `Leave ${status}`,
-      leave,
-      consumedLeaves: user.consumedLeaves
-    });
-
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
 
 
 // Get all pending leaves (admin view)
 export const getPendingLeaves = async (req, res) => {
   try {
     const leaves = await Leave.find({ status: "pending" })
-      .populate("employee", "name email");
+      .populate("employee", "name ");
     res.json({ success: true, leaves });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    res.status(500).json({ success: false, message: err.message,  });
   }
 };
 
@@ -216,3 +255,127 @@ export const getLeavesByStatus = async (req, res) => {
   }
 };
 
+// Fetch leaves by status, optionally filter by employeeId
+export const getLeavesByStatusbyid = async (req, res) => {
+try {
+    const { status, employeeId } = req.query;
+
+    let query = { status };
+
+    if (employeeId) {
+      // If admin clicked employee card → filter by that employee
+      query.employee = employeeId;
+    } else {
+      // Otherwise → show logged-in admin's own leaves
+      query.employee = req.user._id;
+    }
+
+    const leaves = await Leave.find(query).populate("employee", "name email");
+
+    res.json({ success: true, leaves });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+
+
+export const setLeaveLimits = async (req, res) => {
+  try {
+    const { userId, leaveLimits } = req.body;
+    const requester = req.user; // attached via auth middleware
+
+    // 1️⃣ Ensure userId exists and is a valid MongoDB ObjectId
+    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ success: false, message: "Invalid userId" });
+    }
+
+    // 2️⃣ Authorization: only admins allowed
+    if (requester.role !== "admin") {
+      return res.status(403).json({ success: false, message: "Only admins can set leave limits" });
+    }
+
+    // 3️⃣ Fetch the target user
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    // 4️⃣ Validate leave limits
+    const validTypes = ["casual", "planned", "sick", "wfh"];
+    for (const [type, value] of Object.entries(leaveLimits)) {
+      if (!validTypes.includes(type)) {
+        return res.status(400).json({ success: false, message: `Invalid leave type: ${type}` });
+      }
+
+      if (type === "wfh" && value !== "unlimited" && Number(value) < 0) {
+        return res.status(400).json({ success: false, message: "Invalid WFH limit" });
+      }
+
+      if (type !== "wfh" && Number(value) < 0) {
+        return res.status(400).json({ success: false, message: `Leave limit cannot be negative for ${type}` });
+      }
+    }
+
+    // 5️⃣ Apply the limits
+    user.leaveLimits = { ...user.leaveLimits, ...leaveLimits };
+    await user.save();
+
+    return res.json({
+      success: true,
+      message: `Leave limits updated for ${user.name}`,
+      leaveLimits: user.leaveLimits,
+      name: user.name,
+    });
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+
+export const filterLeaves = async (req, res) => {
+  try {
+    //  Admin only
+    if (!req.user || req.user.role !== "admin") {
+      return res.status(403).json({ success: false, message: "Only admins can access this" });
+    }
+
+    const { userId, leaveType, status, month, year } = req.query;
+
+    const filter = {};
+
+    if (userId && mongoose.Types.ObjectId.isValid(userId)) filter.employee = userId;
+    if (leaveType) filter.leaveType = leaveType;
+    if (status) filter.status = status;
+
+    // Month and year filter
+    if (month && year) {
+      const startDate = new Date(Number(year), Number(month) - 1, 1);
+      const endDate = new Date(Number(year), Number(month), 0, 23, 59, 59);
+      filter.fromDate = { $lte: endDate };
+      filter.toDate = { $gte: startDate };
+    }
+
+    // Fetch leaves and populate employee details
+    const leaves = await Leave.find(filter).populate("employee", "name email");
+
+    // Leave summary (consumed per type)
+    const leaveTypes = ["casual", "planned", "sick", "wfh"];
+    const statusSummary = {};
+    leaveTypes.forEach((type) => statusSummary[type] = { consumed: 0 });
+
+    leaves.forEach((l) => {
+      const from = month && year ? (l.fromDate < new Date(year, month - 1, 1) ? new Date(year, month - 1, 1) : l.fromDate) : l.fromDate;
+      const to = month && year ? (l.toDate > new Date(year, month, 0, 23, 59, 59) ? new Date(year, month, 0, 23, 59, 59) : l.toDate) : l.toDate;
+      const days = Math.ceil((to - from) / (1000 * 60 * 60 * 24)) + 1;
+
+      if (statusSummary[l.leaveType]) statusSummary[l.leaveType].consumed += days;
+    });
+
+    res.json({ success: true, leaves, status: statusSummary });
+
+  } catch (err) {
+    console.error("filterLeaves error:", err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};

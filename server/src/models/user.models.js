@@ -1,6 +1,6 @@
 
 import mongoose from "mongoose";
-import bcrypt from "bcryptjs";
+
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -33,17 +33,38 @@ const userSchema = new mongoose.Schema({
     type:Date,
     default: null
   },
-  consumedLeaves: {
+
+  leaveLimits: { // total allowed leaves per type
+    casual: { type: Number, default: 0 },
+    planned: { type: Number, default: 0 },
+    sick: { type: Number, default: 0 },
+    wfh: { type: String, default: "0" } // use "unlimited" string or number
+  },
+
+  consumedLeaves: {  // leaves already used
     casual: { type: Number, default: 0 },
     planned: { type: Number, default: 0 },
     sick: { type: Number, default: 0 },
     wfh: { type: Number, default: 0 }
   },
-  employeeCode: String,
-  designation: String,
-  joiningDate: Date,
-  appraisalDate: Date,
-  PFCode: String,
+
+  employeeCode: { type: String, required: true, unique: true },
+  gender: {type: String},
+  designation: { type: String, required: true },
+  department: { type: String, required: true },
+  appraisalDate: { type: Date },
+  joiningDate: { type: Date, required: true },
+  uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // who added employee
+  //  store Cloudinary URL as string
+  profileImage: {
+    type: String,
+    default: "", // optional default
+  },
+
+  //  profileImage: {
+  //   data: Buffer,
+  //   contentType: String,
+  // },
   UAN: String,
   bankDetails: {
     accountNumber: String,
@@ -53,17 +74,19 @@ const userSchema = new mongoose.Schema({
   bonusReceived: Number,
   dob: Date,
   salary: Number,
-  office: String,
   lop: Number,
 
 }, { timestamps: true });
 
 
 // Hash password before save
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-  this.password = await bcrypt.hash(this.password, 10);
-  next();
-});
+// userSchema.pre("save", async function (next) {
+//   if (!this.isModified("password")) return next();
+//   if (!this.password.startsWith("$2a$")) { // only hash if not already hashed
+//     this.password = await bcrypt.hash(this.password, 10);
+//   }
+//   // this.password = await bcrypt.hash(this.password, 10);
+//   next();
+// });
 
 export default mongoose.model("User", userSchema);

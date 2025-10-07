@@ -7,6 +7,8 @@ import AllUsers from './Pages/AllUsers'
 import Layout from './Pages/Layout'
 import './App.css'
 import EmployeeDetails from './Pages/EmployeeDetails'
+import ApplyLeave from './components/ApplyLeave'
+
 
 const App = () => {
 
@@ -17,10 +19,12 @@ const App = () => {
      <BrowserRouter>
        <Routes>
          <Route path="/" element={<Layout />}>
-         <Route index element={<Dashboard />} /> {/*  Show by default */}
+         <Route index element={<Dashboard />} />   
           <Route path="dashboard" element={<Dashboard />} />
+          <Route path="/dashboard/:employeeId" element={<Dashboard />} />
           <Route path="allUsers" element={<AllUsers />} />
           <Route path="employee-details" element={<EmployeeDetails/>}></Route>
+          <Route path="apply-leave" element={<ApplyLeave />} />
         </Route>
         <Route path="/login"   element={<Login  />}/>
         <Route path="/reset-password" element={<ResetPassword/>} />

@@ -20,9 +20,9 @@
   transform: rotateY(180deg);
 }
 
-.hide-scrollbar::-webkit-scrollbar {
+ .hide-scrollbar::-webkit-scrollbar {
   display: none; /* Safari and Chrome */
-}
+ } 
 
 
 /* Calendar container */
@@ -93,3 +93,8 @@
   font-weight: bold;
 }
 
+@media (max-width: 768px) {
+  body {
+    min-width: 1200px; /* Ignore small screen width */
+  }
+}

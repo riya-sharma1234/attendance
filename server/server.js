@@ -1,6 +1,6 @@
 import app from "./app.js"
 import connectDB from "./src/config/database.config.js";
-const PORT = process.env.PORT || 9000;
+const PORT = process.env.PORT || 9001;
 
 connectDB().then(() => {
   app.listen(PORT , (err) => {

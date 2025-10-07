@@ -37,7 +37,7 @@ export const getAnnouncements = async (req, res) => {
 export const updateAnnouncement = async (req, res) => {
   try {
     const { id } = req.params; // announcement id from route
-    const { title, message, audience } = req.body;
+    const { title, message, } = req.body;
 
     // find announcement by id
     const announcement = await Announcement.findById(id);
@@ -51,7 +51,7 @@ export const updateAnnouncement = async (req, res) => {
     // update fields
     if (title) announcement.title = title;
     if (message) announcement.message = message;
-    if (audience) announcement.audience = audience;
+    // if (audience) announcement.audience = audience;
 
     await announcement.save();
 
