@@ -24,17 +24,15 @@ export const login = async (req, res) => {
 
     // Send token as HTTP-only cookie
     res.cookie("token", token, {
-      httpOnly: true, // can't access via JS
-      // secure: process.env.NODE_ENV === "production", // only HTTPS in prod
-      // sameSite: "strict",
-      secure: false,          // for localhost only
-      sameSite: "lax",
-      maxAge: 24 * 60 * 60 * 1000 // 1 day
+      // httpOnly: true, // can't access via JS
+      // secure: false,          // for localhost only
+      // sameSite: "lax",
+      // maxAge: 24 * 60 * 60 * 1000 // 1 day
 
-      // httpOnly: true,           // cannot be accessed via JS
-      // secure: true,             // must be true on HTTPS
-      // sameSite: "none",         // allow cross-site cookies
-      // maxAge: 24 * 60 * 60 * 1000 // 
+      httpOnly: true,           // cannot be accessed via JS
+      secure: true,             // must be true on HTTPS
+      sameSite: "none",         // allow cross-site cookies
+      maxAge: 24 * 60 * 60 * 1000 // 
     });
 
     res.json({
@@ -55,18 +53,18 @@ export const login = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
-    res.clearCookie('token', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000
-    })
-    // res.clearCookie("token", {
+    // res.clearCookie('token', {
     //   httpOnly: true,
-    //   secure: true,
-    //   sameSite: "none",
+    //   secure: process.env.NODE_ENV === "production",
+    //   sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+    //   maxAge: 7 * 24 * 60 * 60 * 1000
+    // })
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
 
-    // }).json({ success: true });
+    })
 
     return res.json({ success: true, message: "logged out" })
   } catch (error) {
