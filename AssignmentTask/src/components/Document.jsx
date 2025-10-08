@@ -1,3 +1,5 @@
+ 
+
 
 // import React, { useEffect, useState } from "react";
 // import { FaTrash, FaUpload } from "react-icons/fa";
@@ -479,7 +481,7 @@ const Document = () => {
   }, [error, successMessage, dispatch]);
  
   return (
-    <div className="bg-[#0d1321] h-[500] p-6 flex justify-center">
+    <div className="bg-[#0d1321]  p-6 flex justify-center">
       <div className="bg-white w-full max-w-3xl p-6 rounded-2xl shadow-lg">
         <h1 className="text-center text-gray-900 font-bold text-2xl mb-4">
           Upload & View Documents
@@ -546,14 +548,14 @@ const Document = () => {
 
         {/* Documents List */}
         <h2 className="text-center text-gray-900 font-bold text-xl mb-2">Documents List</h2>
-        <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
+        <div className="space-y-3 max-h-64 overflow-y-auto pr-2 flex flex-col gap-3 scrollbar-hide">
           {documents?.length === 0 ? (
             <p className="text-center text-gray-500">No documents uploaded yet.</p>
           ) : (
             documents.map((doc) => (
               <div
                 key={doc._id}
-                className="flex justify-between items-center bg-gray-50 p-3 rounded border border-blue-600 max-h-64 overflow-y-auto scrollbar-hide"
+                className="flex justify-between items-center bg-gray-50 p-3 rounded border border-blue-600 "
               >
                 <span className="text-gray-900 break-all">{doc.title || doc.fileUrl.split("/").pop()}</span>
 
@@ -592,6 +594,5 @@ const Document = () => {
 };
 
 export default Document;
-
 
 

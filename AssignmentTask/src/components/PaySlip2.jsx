@@ -1,7 +1,8 @@
 import React, { useState, useRef } from "react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import octaadslogo from "../assets/octaadslogo.jpg"; // blue logo
+import octaadslogo from "../assets/octaadslogo.jpg"; 
+import signature from "../assets/signature.png";
 
 const PaySlip = () => {
     const [employee, setEmployee] = useState({
@@ -201,8 +202,13 @@ const PaySlip = () => {
                 {/* Payslip Title */}
                 <h3 style={{ color: "#111827", fontWeight: "bold" }} className="text-center underline text-lg mb-6 tracking-wide">
                     PAYSLIP FOR{" "}
-                    {employee.date
+                    {/* {employee.date
                         ? new Date(employee.date).toLocaleString("default", { month: "long", year: "numeric" })
+                        : "2025"} */}
+                    {employee.date
+                        ? new Date(employee.date)
+                            .toLocaleString("default", { month: "long", year: "numeric" })
+                            .toUpperCase()
                         : "2025"}
                 </h3>
 
@@ -234,7 +240,7 @@ const PaySlip = () => {
                     {/* Salary Table */}
                     <table className="relative" style={{ width: "100%", borderCollapse: "collapse", border: "1px solid #d1d5db", fontSize: "0.875rem", marginBottom: "1.5rem" }}>
                         <thead>
-                            <tr style={{ backgroundColor: "white" }}>
+                            <tr >
                                 <th style={{ border: "1px solid #d1d5db", padding: "6px", textAlign: "left" }}>DETAILS</th>
                                 <th style={{ border: "1px solid #d1d5db", padding: "6px", textAlign: "left" }}>AMOUNT (₹)</th>
                             </tr>
@@ -248,8 +254,8 @@ const PaySlip = () => {
                             <tr><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>EPS</td><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>{employee.eps}</td></tr>
                             <tr><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>ESI</td><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>{employee.esi}</td></tr>
                             <tr><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>Other Allowance</td><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>{employee.otherAllowance}</td></tr>
-                            <tr style={{ fontWeight: "600", backgroundColor: "white" }}><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>Gross Salary</td><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>{grossSalary}</td></tr>
-                            <tr style={{ fontWeight: "600", backgroundColor: "white" }}><td colSpan={2} style={{ border: "1px solid #d1d5db", padding: "4px" }}>Deductions</td></tr>
+                            <tr style={{ fontWeight: "600", }}><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>Gross Salary</td><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>{grossSalary}</td></tr>
+                            <tr style={{ fontWeight: "600", }}><td colSpan={2} style={{ border: "1px solid #d1d5db", padding: "4px" }}>Deductions</td></tr>
                             <tr><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>EPF</td><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>{employee.epff}</td></tr>
                             <tr><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>EPS</td><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>{employee.epss}</td></tr>
                             <tr><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>ESI</td><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>{employee.esii}</td></tr>
@@ -271,9 +277,12 @@ const PaySlip = () => {
                             abdullakhan@octaadsmedia.com
                         </a>
                     </div>
-                    <div style={{ textAlign: "right", color: "#6b21a8", fontSize: "10px" }}>
+                    {/* <div style={{ textAlign: "right", color: "#6b21a8", fontSize: "10px" }}>
                         <p>Authorised Signatory/Director</p>
-                    </div>
+                    </div> */}
+                    <div style={{ textAlign: "right",  }} className="w-70">
+                                <img src={signature} className="" alt="" />
+                              </div>
                 </div>
 
                 <div style={{ textAlign: "right", marginTop: "1rem" }}>

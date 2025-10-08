@@ -75,6 +75,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { fetchMe } from "../redux/authSlice";
 import {
   fetchAnnouncements,
   deleteAnnouncement,
@@ -95,11 +96,17 @@ export const GetAnnouncement = () => {
    const { employees } = useSelector((state) => state.employees);
 
   const [birthdays, setBirthdays] = useState([]);
-
+   const { user, loading } = useSelector((state) => state.auth);
+  
   // load admin announcements
   useEffect(() => {
     dispatch(fetchAnnouncements());
   }, [dispatch]);
+
+
+   useEffect(() => {
+       dispatch(fetchMe());
+    }, [dispatch]);
 
   // toast messages
   useEffect(() => {
@@ -153,12 +160,14 @@ export const GetAnnouncement = () => {
               <p className="text-gray-700 mt-1">{ann.message}</p>
             </div>
             {/* delete only for real announcements */}
-            <button
+             {user && user.role === "admin" && (
+               <button
               onClick={() => handleDelete(ann._id)}
-              className="flex items-center gap-1 bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
+              className="flex items-center gap-1 bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 cursor-pointer mt-3"
             >
-              <FaTrash /> Delete
+            <FaTrash />
             </button>
+             )}
           </div>
         ))}
       </div>

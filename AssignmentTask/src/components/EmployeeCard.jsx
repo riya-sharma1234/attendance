@@ -12,15 +12,15 @@ import { useNavigate } from "react-router-dom";
 const EmployeeCard = ({ employee }) => {
   const dispatch = useDispatch();
   const { user } = useSelector(state => state.auth); // logged-in user
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   // console.log(employee)
   // console.log(employee.profileImage)
 
   const [showModal, setShowModal] = useState(false);
-   const [flipped, setFlipped] = useState(false); // track flip state
+  const [flipped, setFlipped] = useState(false); // track flip state
 
-    const handleViewDetails = () => {
+  const handleViewDetails = () => {
     navigate(`/dashboard/${employee._id}`);
   };
 
@@ -52,13 +52,18 @@ const EmployeeCard = ({ employee }) => {
       setFlipped(!flipped);
     }
   };
-  
+
   return (
 
 
     <div className="flex justify-center items-center ">
-      <div className= {`flip-card w-[300px] h-[400px] ${flipped ? 'flip-card-flipped' : ''}`}
-        onClick={user?.role === "admin" ? toggleFlip : undefined} // flip only if admin
+      <div className={`flip-card w-[300px] h-[400px] ${flipped && user.role === "admin" ? 'flip-card-flipped' : ''}`}
+        // onClick={toggleFlip} // flip only if admin
+        onClick={() => {
+          if (user.role === 'admin') {
+            toggleFlip();
+          }
+        }}
       >
         <div className="flip-card-inner relative w-full h-full">
           {/* FRONT SIDE */}
@@ -93,54 +98,54 @@ const EmployeeCard = ({ employee }) => {
 
           {/* BACK SIDE */}
           {user?.role === "admin" && (
-          <div className="flip-card-back absolute w-full h-full bg-white rounded-xl overflow-hidden shadow-xl border">
-            <div className="bg-[#043e6d] h-20 text-white text-center py-3">
-              <h2 className="text-lg font-bold">OctaAds Media Private Limited</h2>
+            <div className="flip-card-back absolute w-full h-full bg-white rounded-xl overflow-hidden shadow-xl border">
+              <div className="bg-[#043e6d] h-20 text-white text-center py-3">
+                <h2 className="text-lg font-bold">OctaAds Media Private Limited</h2>
+              </div>
+
+              <div className="px-4 py-6 text-sm text-gray-700">
+
+
+                <p><span className="font-semibold">Join Date</span> : {employee.joiningDate ? new Date(employee.joiningDate).toLocaleDateString() : "-"}</p>
+                <p><span className="font-semibold">Appraisal Date</span> : {employee.appraisalDate ? new Date(employee.appraisalDate).toLocaleDateString() : "-"}</p>
+
+                <br />
+
+                <p><span className="font-semibold">UAN</span> : {employee.UAN}</p>
+                <p><span className="font-semibold">Salary</span> : {employee.salary}</p>
+
+                <br />
+
+                <div>
+                  <span className="font-semibold">Bank Details : </span>
+                  {employee.bankDetails ? (
+                    <div>
+                      <p className='text-gray-700'>Account No: {employee.bankDetails.accountNumber}</p>
+                      <p className='text-gray-700'>IFSC: {employee.bankDetails.ifsc}</p>
+                    </div>
+                  ) : (
+                    <p>-</p>
+                  )}
+                </div>
+
+
+
+                <div className="mt-5 flex gap-4 justify-between">
+                  <button className="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors duration-200 cursor-pointer" onClick={() => setShowModal(true)}>
+                    Edit
+                  </button>
+                  <button className="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors duration-200 cursor-pointer " onClick={handleViewDetails} >
+                    view Details
+                  </button>
+                </div>
+
+                <div className="relative">
+                  <button className="absolute right-2 top-5 text-red-500 cursor-pointer" onClick={() => handleDelete(employee._id)}>
+                    <AiFillDelete size={35} />
+                  </button>
+                </div>
+              </div>
             </div>
-
-            <div className="px-4 py-6 text-sm text-gray-700">
-
-
-              <p><span className="font-semibold">Join Date</span> : {employee.joiningDate ? new Date(employee.joiningDate).toLocaleDateString() : "-"}</p>
-              <p><span className="font-semibold">Appraisal Date</span> : {employee.appraisalDate ? new Date(employee.appraisalDate).toLocaleDateString() : "-"}</p>
-
-              <br />
-
-              <p><span className="font-semibold">UAN</span> : {employee.UAN}</p>
-              <p><span className="font-semibold">Salary</span> : {employee.salary}</p>
-
-              <br />
-
-              <div>
-                <span className="font-semibold">Bank Details : </span>
-                {employee.bankDetails ? (
-                  <div>
-                    <p className='text-gray-700'>Account No: {employee.bankDetails.accountNumber}</p>
-                    <p className='text-gray-700'>IFSC: {employee.bankDetails.ifsc}</p>
-                  </div>
-                ) : (
-                  <p>-</p>
-                )}
-              </div>
-
-
-
-              <div className="mt-5 flex gap-4 justify-between">
-                <button className="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors duration-200 cursor-pointer" onClick={() => setShowModal(true)}>
-                  Edit
-                </button>
-                <button className="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors duration-200 cursor-pointer " onClick={handleViewDetails} >
-                  view Details
-                </button>
-              </div>
-
-              <div className="relative">
-                <button className="absolute right-2 top-5 text-red-500 cursor-pointer" onClick={() => handleDelete(employee._id)}>
-                  <AiFillDelete size={35} />
-                </button>
-              </div>
-            </div>
-          </div>
           )}
         </div>
       </div>

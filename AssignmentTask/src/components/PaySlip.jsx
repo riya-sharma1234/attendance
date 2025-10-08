@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import octaadslogo from "../assets/octaadslogo.jpg"; // blue logo
+import signature from "../assets/signature.png";
 
 const PaySlip = () => {
   const [employee, setEmployee] = useState({
@@ -197,8 +198,13 @@ const PaySlip = () => {
         {/* Payslip Title */}
         <h3 style={{ color: "#111827", fontWeight: "bold" }} className="text-center underline text-lg mb-6 tracking-wide">
           PAYSLIP FOR{" "}
-          {employee.date
+          {/* {employee.date
             ? new Date(employee.date).toLocaleString("default", { month: "long", year: "numeric" })
+            : "2025"} */}
+          {employee.date
+            ? new Date(employee.date)
+              .toLocaleString("default", { month: "long", year: "numeric" })
+              .toUpperCase()
             : "2025"}
         </h3>
 
@@ -230,7 +236,7 @@ const PaySlip = () => {
           {/* Salary Table */}
           <table className="relative" style={{ width: "100%", borderCollapse: "collapse", border: "1px solid #d1d5db", fontSize: "0.875rem", marginBottom: "1.5rem" }}>
             <thead>
-              <tr style={{ backgroundColor: "white" }}>
+              <tr >
                 <th style={{ border: "1px solid #d1d5db", padding: "6px", textAlign: "left" }}>DETAILS</th>
                 <th style={{ border: "1px solid #d1d5db", padding: "6px", textAlign: "left" }}>AMOUNT (₹)</th>
               </tr>
@@ -243,53 +249,53 @@ const PaySlip = () => {
               <tr><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>Employee PF</td><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>{employee.empPFF}</td></tr>
               <tr><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>Employer PF</td><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>{employee.employerPFF}</td></tr>
               <tr><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>Other Allowance</td><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>{employee.otherAllowance}</td></tr>
-              <tr style={{ fontWeight: "600", backgroundColor: "white" }}><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>Gross Salary</td><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>{grossSalary}</td></tr>
-              <tr style={{ fontWeight: "600", backgroundColor: "white" }}><td colSpan={2} style={{ border: "1px solid #d1d5db", padding: "4px" }}>Deductions</td></tr>
+              <tr style={{ fontWeight: "600", }}><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>Gross Salary</td><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>{grossSalary}</td></tr>
+              <tr style={{ fontWeight: "600", }}><td colSpan={2} style={{ border: "1px solid #d1d5db", padding: "4px" }}>Deductions</td></tr>
               <tr><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>Employee PF</td><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>{employee.empPF}</td></tr>
               <tr><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>Employer PF</td><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>{employee.employerPF}</td></tr>
               <tr><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>Other Deductions</td><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>{employee.otherDeduction}</td></tr>
               <tr style={{ fontWeight: "bold", backgroundColor: "white" }}><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>Net In-Hand</td><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>{netInHand}</td></tr>
             </tbody>
           </table>
-         </div>
-          {/* Footer */}
-          <div style={{ borderTop: "1px solid #d1d5db", paddingTop: "1rem" }} className="flex justify-between items-end">
-            <div>
-              <p><strong>Sincerely,</strong></p>
-              <p>Abdulla Khan</p>
-              <p>Co-Founder & Director</p>
-              <p>Octaads Media</p>
-              <a href="mailto:abdullakhan@octaadsmedia.com" style={{ color: "#2563eb", textDecoration: "underline" }}>
-                abdullakhan@octaadsmedia.com
-              </a>
-            </div>
-            <div style={{ textAlign: "right", color: "#6b21a8", fontSize: "10px" }}>
-              <p>Authorised Signatory/Director</p>
-            </div>
+        </div>
+        {/* Footer */}
+        <div style={{ borderTop: "1px solid #d1d5db", paddingTop: "1rem" }} className="flex justify-between items-end relative">
+          <div>
+            <p><strong>Sincerely,</strong></p>
+            <p>Abdulla Khan</p>
+            <p>Co-Founder & Director</p>
+            <p>Octaads Media</p>
+            <a href="mailto:abdullakhan@octaadsmedia.com" style={{ color: "#2563eb", textDecoration: "underline" }}>
+              abdullakhan@octaadsmedia.com
+            </a>
           </div>
-
-          <div style={{ textAlign: "right", marginTop: "1rem" }}>
-            <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end", alignItems: "center" }}>
-              <span style={{ color: "#06b6d4", fontSize: "1.25rem" }}>📍</span>
-              <p>
-                C/O: Siraj Khan, 1ST Floor, Loco Bazar, Near Loco Bazar Masjid,
-                Gomoh, Dhanbad, Jharkhand, 828401
-              </p>
-            </div>
+          <div style={{ textAlign: "right",  }} className="w-70">
+            <img src={signature} className="" alt="" />
           </div>
         </div>
 
-        {/* Download Button */}
-        <div style={{ textAlign: "center" }}>
-          <button
-            onClick={downloadPDF}
-            style={{ backgroundColor: "#06b6d4", color: "#ffffff", borderRadius: "0.5rem", padding: "0.5rem 2rem", marginTop: "1.5rem", cursor: "pointer" }}
-          >
-            Download as PDF
-          </button>
+        <div style={{ textAlign: "right", marginTop: "1rem" }}>
+          <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end", alignItems: "center" }}>
+            <span style={{ color: "#06b6d4", fontSize: "1.25rem" }}>📍</span>
+            <p>
+              C/O: Siraj Khan, 1ST Floor, Loco Bazar, Near Loco Bazar Masjid,
+              Gomoh, Dhanbad, Jharkhand, 828401
+            </p>
+          </div>
         </div>
       </div>
-      );
+
+      {/* Download Button */}
+      <div style={{ textAlign: "center" }}>
+        <button
+          onClick={downloadPDF}
+          style={{ backgroundColor: "#06b6d4", color: "#ffffff", borderRadius: "0.5rem", padding: "0.5rem 2rem", marginTop: "1.5rem", cursor: "pointer" }}
+        >
+          Download as PDF
+        </button>
+      </div>
+    </div>
+  );
 };
 
-      export default PaySlip;
+export default PaySlip;
