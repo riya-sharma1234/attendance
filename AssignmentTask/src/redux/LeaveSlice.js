@@ -85,9 +85,9 @@ export const getLeavesByStatusbyid = createAsyncThunk(
   async ({ status, employeeId }, { rejectWithValue }) => {
     try {
       // const res = await api.post("/leaves/leave-status", { status, employeeId });
-       const res = await api.get(
-      `/leaves/status?status=${status}${employeeId ? `&employeeId=${employeeId}` : ""}`
-    );
+      const res = await api.get(
+        `/leaves/status?status=${status}${employeeId ? `&employeeId=${employeeId}` : ""}`
+      );
       if (res.data.success) {
         return res.data.leaves; // populated leaves
       }
@@ -213,15 +213,22 @@ const leaveSlice = createSlice({
 
       // --- Monthly Status ---
       .addCase(getMonthlyLeaveStatus.pending, (state) => { state.loading = true; state.error = null; })
-      .addCase(getMonthlyLeaveStatus.fulfilled, (state, action) => { state.loading = false;  state.leaves = action.payload.leaves || []; state.statusByMonth = action.payload.status; })
+      .addCase(getMonthlyLeaveStatus.fulfilled, (state, action) => { state.loading = false; state.leaves = action.payload.leaves || []; state.statusByMonth = action.payload.status; })
       .addCase(getMonthlyLeaveStatus.rejected, (state, action) => { state.loading = false; state.error = action.payload; })
 
       // --- Update Leave Status ---
       .addCase(updateLeaveStatus.pending, (state) => { state.loading = true; state.error = null; })
+      // .addCase(updateLeaveStatus.fulfilled, (state, action) => {
+      //   state.loading = false;
+      //   const index = state.leaves.findIndex(l => l._id === action.payload.leave._id);
+      //   if (index !== -1) state.leaves[index] = action.payload.leave;
+      // })
       .addCase(updateLeaveStatus.fulfilled, (state, action) => {
         state.loading = false;
-        const index = state.leaves.findIndex(l => l._id === action.payload.leave._id);
-        if (index !== -1) state.leaves[index] = action.payload.leave;
+        // Remove the leave from pendingLeaves once approved/rejected
+        state.pendingLeaves = state.pendingLeaves.filter(
+          (l) => l._id !== action.payload.leave._id
+        );
       })
       .addCase(updateLeaveStatus.rejected, (state, action) => { state.loading = false; state.error = action.payload; })
 

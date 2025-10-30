@@ -22,12 +22,12 @@ const PaySlip = () => {
         eps: "",
         esi: "",
         otherAllowance: "",
-        epff: "",
-        epss: "",
-        esii: "",
+        EPF: "",
+        EPS: "",
+        ESI: "",
         otherDeduction: "",
     });
-
+ 
     const payslipRef = useRef();
 
     const handleChange = (e) => {
@@ -100,9 +100,9 @@ const PaySlip = () => {
         Number(employee.otherAllowance || 0);
 
     const totalDeductions =
-        Number(employee.epff || 0) +
-        Number(employee.epss || 0) +
-        Number(employee.esi || 0) +
+        Number(employee.EPF || 0) +
+        Number(employee.EPS || 0) +
+        Number(employee.ESI || 0) +
         Number(employee.otherDeduction || 0);
 
     const netInHand = grossSalary - totalDeductions;
@@ -157,7 +157,7 @@ const PaySlip = () => {
                 {/* Deductions */}
                 <h3 style={{ color: "#111827" }} className="text-lg font-semibold mb-2">📉 Deductions</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {["epff", "epss", "esii", "otherDeduction"].map((key) => (
+                    {["EPF", "EPS", "ESI", "otherDeduction"].map((key) => (
                         <div key={key} className="flex flex-col">
                             <label style={{ color: "#374151" }} className="block font-medium mb-1 capitalize">
                                 {key.replace(/([A-Z])/g, " $1")}
@@ -216,7 +216,7 @@ const PaySlip = () => {
                 <div className="relative mb-6">
                     {/* Transparent background logo */}
                     <img
-                        src={octaadslogo}
+                        src={octaadslogo}    
                         alt="watermark"
                         className="absolute inset-0 m-auto opacity-15  w-[60%] object-contain rounded-full"
                         style={{ zIndex: 0 }}
@@ -227,13 +227,13 @@ const PaySlip = () => {
                             <p><strong>Name:</strong> {employee.name}</p>
                             <p><strong>Date:</strong> {employee.date}</p>
                             <p><strong>Designation:</strong> {employee.designation}</p>
-                            <p><strong>Department:</strong> {employee.department}</p>
+                            <p><strong>Department:</strong> {employee.department}</p>  
                         </div>
                         <div className="space-y-1" style={{ textAlign: "right" }}>
                             <p><strong>Employee ID:</strong> {employee.employeeId}</p>
                             <p><strong>Bank Name:</strong> {employee.bankName}</p>
                             <p><strong>Bank Account:</strong> {employee.bankAccount}</p>
-                            <p><strong>PAN:</strong> {employee.pan}</p>
+                            <p><strong>PAN:</strong> {employee.pan}</p>     
                         </div>
                     </div>
 
@@ -256,9 +256,9 @@ const PaySlip = () => {
                             <tr><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>Other Allowance</td><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>{employee.otherAllowance}</td></tr>
                             <tr style={{ fontWeight: "600", }}><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>Gross Salary</td><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>{grossSalary}</td></tr>
                             <tr style={{ fontWeight: "600", }}><td colSpan={2} style={{ border: "1px solid #d1d5db", padding: "4px" }}>Deductions</td></tr>
-                            <tr><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>EPF</td><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>{employee.epff}</td></tr>
-                            <tr><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>EPS</td><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>{employee.epss}</td></tr>
-                            <tr><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>ESI</td><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>{employee.esii}</td></tr>
+                            <tr><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>EPF</td><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>{employee.EPF}</td></tr>
+                            <tr><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>EPS</td><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>{employee.EPS}</td></tr>
+                            <tr><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>ESI</td><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>{employee.ESI}</td></tr>
                             <tr><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>Other Deductions</td><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>{employee.otherDeduction}</td></tr>
                             <tr style={{ fontWeight: "bold", backgroundColor: "white" }}><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>Net In-Hand</td><td style={{ border: "1px solid #d1d5db", padding: "4px" }}>{netInHand}</td></tr>
                         </tbody>

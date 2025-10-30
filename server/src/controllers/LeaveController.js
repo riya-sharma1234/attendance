@@ -2,18 +2,149 @@ import mongoose from "mongoose";
 import Leave from "../models/leave.models.js";
 import User from "../models/user.models.js";
 
-// Helper: calculate days between two dates (inclusive)
+ 
 const calculateDays = (fromDate, toDate) => {
   const from = new Date(fromDate);
   const to = new Date(toDate);
-  // Strip time portion to avoid timezone issues
   from.setHours(0, 0, 0, 0);
   to.setHours(0, 0, 0, 0);
   return Math.ceil((to - from) / (1000 * 60 * 60 * 24)) + 1;
 };
 
 
-// Apply leave (pending initially)
+// export const applyLeave = async (req, res) => {
+//   try {
+//     const { leaveType, fromDate, toDate, reason } = req.body;
+//     const employeeId = req.user._id;
+
+//     const user = await User.findById(employeeId);
+//     if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+//     const leaveLimits = user.leaveLimits || {}; // dynamic limits per type
+//     const limit = leaveLimits[leaveType];
+
+//     if (limit === undefined) {
+//       return res.status(400).json({ success: false, message: `Invalid leave type: ${leaveType}` });
+//     }
+
+//     const leaveYear = new Date(fromDate).getFullYear();
+
+//     // Calculate total consumed leaves of this type (approved + pending)
+//     if (!user.consumedLeaves) user.consumedLeaves = {};
+//     if (!user.consumedLeaves[leaveType]) user.consumedLeaves[leaveType] = 0;
+
+//     const from = new Date(fromDate);
+//     const to = new Date(toDate);
+//     from.setHours(0,0,0,0);
+//     to.setHours(0,0,0,0);
+//     const reqDays = Math.ceil((to - from) / (1000 * 60 * 60 * 24)) + 1;
+
+//     // Check if leave balance is sufficient
+//     if (limit !== "unlimited" && user.consumedLeaves[leaveType] + reqDays > limit) {
+//       return res.status(400).json({
+//         success: false,
+//         message: `Insufficient leave balance for ${leaveType}`,
+//         consumed: user.consumedLeaves[leaveType],
+//         balance: limit - user.consumedLeaves[leaveType]
+//       });
+//     }
+
+//     // Create leave request (status: pending)
+//     const leave = await Leave.create({
+//       employee: employeeId,
+//       leaveType,
+//       fromDate,
+//       toDate,
+//       reason,
+//       year: leaveYear,
+//       status: "pending"
+//     });
+
+//     // Increase consumedLeaves immediately
+//     user.consumedLeaves[leaveType] += reqDays;
+//     await user.save();
+
+//     // Compute remaining balance dynamically
+//     const balance = {};
+//     Object.keys(leaveLimits).forEach(type => {
+//       if (leaveLimits[type] === "unlimited") {
+//         balance[type] = "Unlimited";
+//       } else {
+//         balance[type] = leaveLimits[type] - (user.consumedLeaves[type] || 0);
+//       }
+//     });
+
+//     res.json({
+//       success: true,
+//       message: "Leave request submitted and balance updated",
+//       leave,
+//       consumedLeaves: user.consumedLeaves,
+//       balance
+//     });
+
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ success: false, message: err.message });
+//   }
+// };
+
+
+// Update leave status (approve/reject)
+// export const updateLeaveStatus = async (req, res) => {
+//   try {
+//     const { leaveId, status } = req.body;
+
+//     if (!leaveId || !status) return res.status(400).json({ success: false, message: "leaveId and status are required" });
+
+//     const leave = await Leave.findById(leaveId);
+//     if (!leave) return res.status(404).json({ success: false, message: "Leave not found" });
+
+//     const user = await User.findById(leave.employee);
+//     if (!user) return res.status(404).json({ success: false, message: "Employee not found" });
+
+//     if (!user.consumedLeaves) user.consumedLeaves = {};
+//     if (!leave.leaveType) return res.status(400).json({ success: false, message: "Leave type is missing" });
+//     if (!user.consumedLeaves[leave.leaveType]) user.consumedLeaves[leave.leaveType] = 0;
+
+//     const from = new Date(leave.fromDate);
+//     const to = new Date(leave.toDate);
+//     const days = Math.ceil((to - from) / (1000 * 60 * 60 * 24)) + 1;
+
+//     if (status === "approved" && leave.status !== "approved") {
+//       user.consumedLeaves[leave.leaveType] += days;
+//     } else if (status === "rejected" && leave.status === "approved") {
+//       user.consumedLeaves[leave.leaveType] = Math.max(0, user.consumedLeaves[leave.leaveType] - days);
+//     }
+
+//     leave.status = status;
+
+//     await leave.save();
+//     await user.save();
+
+//     // Compute remaining balance dynamically
+//     const leaveLimits = user.leaveLimits || {};
+//     const balance = {};
+//     Object.keys(leaveLimits).forEach(type => {
+//       if (leaveLimits[type] === "unlimited") {
+//         balance[type] = "Unlimited";
+//       } else {
+//         balance[type] = leaveLimits[type] - (user.consumedLeaves[type] || 0);
+//       }
+//     });
+
+//     res.json({
+//       success: true,
+//       message: `Leave ${status} successfully`,
+//       leave,
+//       consumedLeaves: user.consumedLeaves,
+//       balance
+//     });
+
+//   } catch (err) {
+//     res.status(500).json({ success: false, message: err.message });
+//   }
+// };
+
 export const applyLeave = async (req, res) => {
   try {
     const { leaveType, fromDate, toDate, reason } = req.body;
@@ -22,41 +153,39 @@ export const applyLeave = async (req, res) => {
     const user = await User.findById(employeeId);
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
-    const leaveLimits = user.leaveLimits || {}; // dynamic limits
+    const leaveLimits = user.leaveLimits || {};
     const limit = leaveLimits[leaveType];
-
-    if (limit === undefined) {
-      return res.status(400).json({ success: false, message: `Invalid leave type: ${leaveType}` });
-    }
+    if (limit === undefined) return res.status(400).json({ success: false, message: `Invalid leave type: ${leaveType}` });
 
     const leaveYear = new Date(fromDate).getFullYear();
 
-    // Calculate total approved leaves of this type in the year
-    const approvedLeaves = await Leave.find({
-      employee: employeeId,
-      year: leaveYear,
-      leaveType,
-      status: "approved"
-    });
+    // Calculate requested days
+    const from = new Date(fromDate);
+    const to = new Date(toDate);
+    from.setHours(0,0,0,0);
+    to.setHours(0,0,0,0);
+    const reqDays = Math.ceil((to - from) / (1000 * 60 * 60 * 24)) + 1;
 
-    let totalConsumed = 0;
-    approvedLeaves.forEach(l => {
-      const from = new Date(l.fromDate);
-      const to = new Date(l.toDate);
-      totalConsumed += Math.ceil((to - from) / (1000 * 60 * 60 * 24)) + 1;
-    });
+    // Initialize consumedLeaves and balance if not present
+    if (!user.consumedLeaves) user.consumedLeaves = {};
+    if (!user.consumedLeaves[leaveType]) user.consumedLeaves[leaveType] = 0;
 
-    const reqDays = Math.ceil((new Date(toDate) - new Date(fromDate)) / (1000 * 60 * 60 * 24)) + 1;
+    if (!user.balance) user.balance = {};
+    if (user.balance[leaveType] === undefined) {
+      user.balance[leaveType] = limit === "unlimited" ? "Unlimited" : Number(limit);
+    }
 
-    if (limit !== "unlimited" && totalConsumed + reqDays > limit) {
+    // Check if leave balance is sufficient
+    if (limit !== "unlimited" && user.consumedLeaves[leaveType] + reqDays > limit) {
       return res.status(400).json({
         success: false,
-        message: `Yearly limit exceeded for ${leaveType}`,
-        consumed: totalConsumed,
-        balance: limit - totalConsumed
+        message: `Insufficient leave balance for ${leaveType}`,
+        consumed: user.consumedLeaves[leaveType],
+        balance: user.balance[leaveType]
       });
     }
 
+    // Create leave request (status: pending)
     const leave = await Leave.create({
       employee: employeeId,
       leaveType,
@@ -67,24 +196,37 @@ export const applyLeave = async (req, res) => {
       status: "pending"
     });
 
+    // Update consumedLeaves and balance
+    user.consumedLeaves[leaveType] += reqDays;
+    if (limit !== "unlimited") {
+      user.balance[leaveType] = Math.max(0, user.balance[leaveType] - reqDays);
+    }
+
+    user.markModified("consumedLeaves");
+    user.markModified("balance");
+    await user.save();
+
     res.json({
       success: true,
-      message: "Leave request submitted and pending approval",
-      leave
+      message: "Leave request submitted and balance updated",
+      leave,
+      leaveLimits: user.leaveLimits,
+      consumedLeaves: user.consumedLeaves,
+      balance: user.balance
     });
 
   } catch (err) {
+    console.error(err);
     res.status(500).json({ success: false, message: err.message });
   }
 };
 
-
-// Update leave status (approve/reject)
 export const updateLeaveStatus = async (req, res) => {
   try {
     const { leaveId, status } = req.body;
 
-    if (!leaveId || !status) return res.status(400).json({ success: false, message: "leaveId and status are required" });
+    if (!leaveId || !status) 
+      return res.status(400).json({ success: false, message: "leaveId and status are required" });
 
     const leave = await Leave.findById(leaveId);
     if (!leave) return res.status(404).json({ success: false, message: "Leave not found" });
@@ -98,11 +240,16 @@ export const updateLeaveStatus = async (req, res) => {
 
     const from = new Date(leave.fromDate);
     const to = new Date(leave.toDate);
+    from.setHours(0,0,0,0);
+    to.setHours(0,0,0,0);
     const days = Math.ceil((to - from) / (1000 * 60 * 60 * 24)) + 1;
 
-    if (status === "approved" && leave.status !== "approved") {
-      user.consumedLeaves[leave.leaveType] += days;
-    } else if (status === "rejected" && leave.status === "approved") {
+    if (status === "approved") {
+      // Do nothing here, because consumedLeaves was already increased on apply
+    }
+
+    if (status === "rejected") {
+      // Always restore consumed leaves on rejection
       user.consumedLeaves[leave.leaveType] = Math.max(0, user.consumedLeaves[leave.leaveType] - days);
     }
 
@@ -134,8 +281,6 @@ export const updateLeaveStatus = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
-
-
 
 export const getLeaveBalances = async (req, res) => {
   try {
@@ -285,21 +430,21 @@ export const setLeaveLimits = async (req, res) => {
     const { userId, leaveLimits } = req.body;
     const requester = req.user; // attached via auth middleware
 
-    // 1️⃣ Ensure userId exists and is a valid MongoDB ObjectId
+    //  Ensure userId exists and is a valid MongoDB ObjectId
     if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({ success: false, message: "Invalid userId" });
     }
 
-    // 2️⃣ Authorization: only admins allowed
+    //  Authorization: only admins allowed
     if (requester.role !== "admin") {
       return res.status(403).json({ success: false, message: "Only admins can set leave limits" });
     }
 
-    // 3️⃣ Fetch the target user
+    //  Fetch the target user
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
-    // 4️⃣ Validate leave limits
+    //  Validate leave limits
     const validTypes = ["casual", "planned", "sick", "wfh"];
     for (const [type, value] of Object.entries(leaveLimits)) {
       if (!validTypes.includes(type)) {
@@ -315,7 +460,7 @@ export const setLeaveLimits = async (req, res) => {
       }
     }
 
-    // 5️⃣ Apply the limits
+    //  Apply the limits
     user.leaveLimits = { ...user.leaveLimits, ...leaveLimits };
     await user.save();
 

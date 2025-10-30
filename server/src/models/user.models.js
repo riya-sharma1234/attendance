@@ -40,20 +40,27 @@ const userSchema = new mongoose.Schema({
     sick: { type: Number, default: 0 },
     wfh: { type: String, default: "0" } // use "unlimited" string or number
   },
-
+  balance: {
+  type: Object,
+  default: {}
+  },
   consumedLeaves: {  // leaves already used
     casual: { type: Number, default: 0 },
     planned: { type: Number, default: 0 },
     sick: { type: Number, default: 0 },
     wfh: { type: Number, default: 0 }
   },
+  empId: {
+  type: String, 
+  unique: true, 
+},
 
   employeeCode: { type: String, required: true, unique: true },
   gender: {type: String},
-  designation: { type: String, required: true },
-  department: { type: String, required: true },
+  designation: { type: String, },
+  department: { type: String,  },
   appraisalDate: { type: Date },
-  joiningDate: { type: Date, required: true },
+  joiningDate: { type: Date,  },
   uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // who added employee
   //  store Cloudinary URL as string
   profileImage: {

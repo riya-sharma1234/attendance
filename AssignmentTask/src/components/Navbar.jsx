@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import dashboardlogo from "../assets/dashboardlogo.png";
 import { logoutUser } from '../redux/authSlice';
+import { fetchMe } from "../redux/authSlice";
 
 const Navbar = () => {
   const [showDropdown, setShowDropDown] = useState(false);
@@ -12,8 +13,12 @@ const Navbar = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const { user } = useSelector((state) => state.auth); // logged-in user
-
+  const { user } = useSelector((state) => state.auth);
+  
+       useEffect(() => {
+       dispatch(fetchMe());
+    }, [dispatch]);
+  
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -22,7 +27,7 @@ const Navbar = () => {
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [])
 
   const handleLogout = () => {
     dispatch(logoutUser())
@@ -53,12 +58,28 @@ const Navbar = () => {
 
         {/* User Avatar */}
         <div className="flex flex-col items-end relative">
-          <FaUserCircle
+          {/* <FaUserCircle
             className="text-4xl text-gray-600 cursor-pointer"
             onClick={() => setShowDropDown((prev) => !prev)}
           />
           {user && (
             <span className="text-sm text-gray-700 font-medium mt-1">{user.name}</span>
+          )} */}
+          {user ? (
+            <img
+              src={user.profileImage}
+              alt={user.name}
+              className="w-12 h-12 rounded-full cursor-pointer"
+              onClick={() => setShowDropDown((prev) => !prev)}
+            />
+          ) : (
+            <>
+              <FaUserCircle
+                className="text-4xl text-gray-600 cursor-pointer"
+                onClick={() => setShowDropDown((prev) => !prev)}
+              />
+              {/* <span className="text-sm text-gray-700 font-medium mt-1">{user.name}</span> */}
+            </>
           )}
 
           {/* Dropdown */}

@@ -6,6 +6,7 @@ const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
+    empId: "",
     employeeCode: "",
     gender: "",
     designation: "",
@@ -29,6 +30,7 @@ const [formData, setFormData] = useState({
         lastName: initialValues.lastName || "",
         email: initialValues.email || "",
         employeeCode: initialValues.employeeCode || "",
+        empId: initialValues.empId|| "",
         gender: initialValues.gender || "",
         designation: initialValues.designation || "",
         department: initialValues.department || "",
@@ -112,6 +114,12 @@ const [formData, setFormData] = useState({
             <label>Employee Code</label>
             <input name="employeeCode" value={formData.employeeCode} onChange={handleChange} className="p-2 border rounded" />
           </div>
+
+          <div className="flex flex-col">
+            <label>EmpId</label>
+            <input name="empId" value={formData.empId} onChange={handleChange} className="p-2 border rounded" />
+          </div>
+
           <div className="flex flex-col">
             <label>Gender</label>
             <select name="gender" value={formData.gender} onChange={handleChange} className="p-2 border rounded">

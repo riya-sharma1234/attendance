@@ -15,6 +15,7 @@ const EmployeeForm = ({ isOpen, onClose }) => {
     firstName: '',
     lastName: '',
     email: '',
+    empId: " ",
     employeeCode: '',
     gender: 'Select Gender',
     designation: '',
@@ -59,6 +60,7 @@ const EmployeeForm = ({ isOpen, onClose }) => {
     const data = new FormData();
     data.append("name", `${formData.firstName} ${formData.lastName}`);
     data.append("email", formData.email);
+    data.append("empId", formData.empId);
     data.append("password", formData.password);
     data.append("designation", formData.designation);
     data.append("department", formData.department);
@@ -131,6 +133,12 @@ const EmployeeForm = ({ isOpen, onClose }) => {
           <div className="flex flex-col">
             <label htmlFor="email" className="text-blue-800 font-medium">Email</label>
             <input type="email" id="email" name="email" value={formData.email} onChange={handleChange}
+              className="p-2 border border-blue-500 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+          </div>
+
+          <div className="flex flex-col">
+            <label htmlFor="empId" className="text-blue-800 font-medium">EmpId</label>
+            <input type="empId" id="empId" name="empId" value={formData.empId} onChange={handleChange}
               className="p-2 border border-blue-500 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none" />
           </div>
 
@@ -233,7 +241,7 @@ const EmployeeForm = ({ isOpen, onClose }) => {
 
           {/* Reporting Manager */}
           <div className="flex flex-col">
-            <label htmlFor="reportingManagerId" className="text-blue-800 font-medium">Reporting Manager ID</label>
+            <label htmlFor="reportingManagerId" className="text-blue-800 font-medium ">Reporting Manager ID</label>
             <input type="text" id="reportingManagerId" name="reportingManagerId" value={formData.reportingManagerId} onChange={handleChange}
               className="p-2 border border-blue-500 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none" />
           </div>
@@ -281,8 +289,8 @@ const EmployeeForm = ({ isOpen, onClose }) => {
               className="p-2 border border-blue-500 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
             </div> */}
-          <div className="flex space-x-6 mt-4">
-            <label className="text-blue-800 font-semibold mt-6">BankDetails:</label>
+          <div className="flex space-x-6 mt-[-20] flex-col">
+            <label className="text-blue-800 font-semibold mt-6 ">BankDetails:</label>
 
             {/* Account Number */}
             <div className="flex flex-col mb-3">

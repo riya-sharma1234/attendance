@@ -13,7 +13,7 @@ export const createEmployee = async (req, res) => {
 
     // Destructure fields from req.body
     let {
-      name, email, password, designation, gender, employeeCode,
+      empId, name, email, password, designation, gender, employeeCode,
       joiningDate, appraisalDate, UAN, bankDetails, salary,
       dob, department
     } = req.body;
@@ -49,6 +49,7 @@ export const createEmployee = async (req, res) => {
 
     // Create employee
     const employee = await User.create({
+      empId,
       name,
       email,
       password: hashedPassword,
@@ -73,6 +74,7 @@ export const createEmployee = async (req, res) => {
       employee: {
         _id: employee._id,
         name: employee.name,
+        id:employee.empId,
         email: employee.email,
         employeeCode: employee.employeeCode,
         designation: employee.designation,

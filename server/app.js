@@ -9,6 +9,9 @@ import leaveRoutes from "./src/routes/leaves.routes.js";
 import announcementRoutes from "./src/routes/announcement.routes.js"
 import documentRoutes  from './src/routes/document.routes.js'
 import attendanceRoutes from "./src/routes/attendance.routes.js"
+// import startDailySync from './src/cron/dailySync.js';
+// import employeeRoutes from './src/routes/employee.routes.js';
+
 import cors from "cors";
 
 
@@ -29,12 +32,14 @@ app.use(cookieParser());
   await seedAdmins();
 })();
 
+// await startDailySync();
 
 app.use("/api/user", userroutes)
 app.use("/api/leaves", leaveRoutes);
 app.use("/api/attendance", attendanceRoutes)
 app.use("/api/announcement", announcementRoutes);
 app.use("/api/document", documentRoutes);
+// app.use("/api/employees", employeeRoutes); // ✅ Add this line
 
 
 app.use(error);

@@ -55,7 +55,8 @@ const EmployeeCard = ({ employee }) => {
 
   return (
 
-
+    <div>
+     {user?.role === "admin" && (
     <div className="flex justify-center items-center ">
       <div className={`flip-card w-[300px] h-[400px] ${flipped && user.role === "admin" ? 'flip-card-flipped' : ''}`}
         // onClick={toggleFlip} // flip only if admin
@@ -157,7 +158,46 @@ const EmployeeCard = ({ employee }) => {
         />
       )}
     </div>
+  )}
 
+{user?.role !== "admin" && (
+ <div className="flex justify-center items-center ">
+      <div className={` w-[300px] h-[400px]`} >
+          <div className=" relative w-full h-full">
+             <div className="flip-card-front absolute w-full h-full bg-white rounded-xl overflow-hidden shadow-xl border">
+            <div className="bg-[#043e6d] h-24 relative">
+              <div className="text-white text-center py-4">
+                <h2 className="text-lg font-bold">OctaAds Media Private Limited</h2>
+              </div>
+              <div className="absolute bottom-[-40px] left-1/2 transform -translate-x-1/2">
+                <img
+                  src={employee.profileImage}
+                  alt="Profile"
+                  className="w-20 h-20 rounded-full border-4 border-white object-cover"
+                />
+              </div>
+            </div>
+
+            <div className="mt-16 px-4 text-center">
+              <h3 className="font-bold text-lg text-[#801b3b]">{employee.name}</h3>
+              <p className="text-sm text-gray-600 font-semibold">{employee.department}</p>
+              <div className="text-sm mt-4 text-left text-gray-700">
+                <p><span className="font-semibold">Designation</span> : {employee.designation}</p>
+                <p><span className="font-semibold">ID NO</span> : {employee.employeeCode}</p>
+                <p><span className="font-semibold">DOB</span> : {employee.dob ? new Date(employee.dob).toLocaleDateString() : "-"}</p>
+                <p><span className="font-semibold">Gender</span> : {employee.gender}</p>
+                <p><span className="font-semibold">E-mail</span> : {employee.email}</p>
+              </div>
+
+
+            </div>
+          </div>
+          </div>
+
+      </div>
+   </div>
+)}
+ </div>
   )
 }
 

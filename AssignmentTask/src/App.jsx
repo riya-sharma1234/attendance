@@ -8,7 +8,7 @@ import Layout from './Pages/Layout'
 import './App.css'
 import EmployeeDetails from './Pages/EmployeeDetails'
 import ApplyLeave from './components/ApplyLeave'
-
+import Punches from "./Pages/EmployeeList"
 
 const App = () => {
 
@@ -28,6 +28,8 @@ const App = () => {
         </Route>
         <Route path="/login"   element={<Login  />}/>
         <Route path="/reset-password" element={<ResetPassword/>} />
+        <Route path="/punches" element={<Punches/>} />
+
       </Routes>
     </BrowserRouter>
     </>

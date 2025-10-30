@@ -112,7 +112,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../utils/axios";
 
-// 🔹 Check current session (cookie-based)
+//  Check current session (cookie-based)
 export const fetchMe = createAsyncThunk(
   "auth/fetchMe",
   async (_, { rejectWithValue }) => {
@@ -126,12 +126,11 @@ export const fetchMe = createAsyncThunk(
   }
 );
 
-// 🔹 Login
+
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
   async ({ email, password }, { dispatch, rejectWithValue }) => {
     try {
-      // Login → sets cookie on server
       const res = await api.post(
         "/user/login",
         { email, password },
@@ -150,7 +149,7 @@ export const loginUser = createAsyncThunk(
   }
 );
 
-// 🔹 Logout
+//  Logout
 export const logoutUser = createAsyncThunk(
   "auth/logoutUser",
   async (_, { rejectWithValue }) => {
@@ -167,7 +166,7 @@ export const logoutUser = createAsyncThunk(
 const authSlice = createSlice({
   name: "auth",
   initialState: {
-    user: null, // 🔹 no more localStorage
+    user: null, 
     loading: false,
     error: null,
   },
@@ -185,7 +184,7 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload; // ✅ full profile
+        state.user = action.payload; 
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
@@ -199,7 +198,7 @@ const authSlice = createSlice({
       })
       .addCase(logoutUser.fulfilled, (state) => {
         state.loading = false;
-        state.user = null; // ✅ reset user instantly
+        state.user = null; 
       })
       .addCase(logoutUser.rejected, (state, action) => {
         state.loading = false;
@@ -213,11 +212,11 @@ const authSlice = createSlice({
       })
       .addCase(fetchMe.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload; // ✅ hydrate from cookie
+        state.user = action.payload; 
       })
       .addCase(fetchMe.rejected, (state, action) => {
         state.loading = false;
-        state.user = null; // 🔹 if invalid session, clear user
+        state.user = null; 
         state.error = action.payload;
       });
   },

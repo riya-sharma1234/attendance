@@ -1,24 +1,31 @@
-// import sql from "mssql/msnodesqlv8.js";
 
-// const config = {
-//   server: "localhost\\SQLEXPRESS",   // adjust if different
-//   database: "eTimeTrackLite1",        // put your actual DB name
-//   options: {
-//     trustedConnection: true,
-//     enableArithAbort: true,
-//   },
-//   driver: "msnodesqlv8",
-// };
 
-// async function getEmployees() {
-//   try {
-//     const pool = await sql.connect(config);
+import sql from "mssql";
 
-//     const result = await pool.request().query("SELECT TOP 10 * FROM dbo.Employees");
-//     console.log("Employees:", result.recordset);
-//   } catch (err) {
-//     console.error("SQL Error:", err);
-//   }
-// }
+const config = {
+  user: "sa",
+  password: "Riya@1212",
+  server: "localhost\\SQLEXPRESS",
+  database: "etimetracklite1", 
+   options: {
+    encrypt: false,
+    enableArithAbort: true
+  }
+};
 
-// getEmployees();
+
+async function getEmployees() {
+  try {
+    const pool = await sql.connect(config);
+    // const result = await pool.request().query("SELECT * FROM dbo.AttendanceLogs");
+    // const result = await pool.request().query("SELECT * FROM dbo.Employees"); 
+    const result = await pool.request().query("SELECT * FROM dbo.Employees WHERE EmployeeCode = 1");
+
+    console.log("Employees:", result.recordset);
+    await pool.close();
+  } catch (err) {
+    console.error("SQL Error:", err);
+  }
+}
+
+getEmployees();
